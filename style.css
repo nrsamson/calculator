@@ -29,49 +29,46 @@ body {
     grid-template-columns: repeat(4, 120px);
 }
 
-.two-button-row {
-    display: grid;
-    grid-template-columns: repeat(2, 240px);
-}
-
 .button {
     border: 2px solid black;
     font-size: 40px;
     height: 80px;
     width: 120px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    line-height: 80px;
     text-align: center;
     box-sizing: border-box;
     transition: background-color 0.2s;
 }
-
+.exponent-button{
+    line-height: 60px;
+}
 .testing {
-    font-size: 40px;
-    text-align: center;
+    font-size: 20px;
 }
 
 .back-button,
-.sign-button {
-    width: 240px;
+.sign-button,
+.equals-button,
+.exponent-button {
     background-color: #4682B4;
 }
 
 .back-button:hover,
-.sign-button:hover {
-    background-color: rgba(255, 255, 240, 0.7);
+.sign-button:hover,
+.equals-button:hover,
+.exponent-button:hover {
+    background-color: #77afdd;
 }
 
 .num-button,
 .clear-button,
-.equals-button {
+.decimal-button {
     background-color: rgba(0, 71, 171, 0.7);
 }
 
 .num-button:hover,
 .clear-button:hover,
-.equals-button:hover {
+.decimal-button:hover {
     background-color: rgba(0, 71, 171, 0.5);
 }
 

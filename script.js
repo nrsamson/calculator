@@ -18,6 +18,8 @@ const calculator = {
             case '/':
                 if (b === 0) return 'Error';
                 return a / b;
+            case '^':
+                return Math.pow(a, b);
             default:
                 return 'D';
         }
@@ -28,69 +30,123 @@ function updateDisplay(text) {
     display.textContent = text;
 }
 
+function getDisplayText() {
+    return display.textContent;
+}
+
+function getDisplayValue() {
+    return Number(display.textContent);
+}
+
+function roundOutput(text) {
+    if (text.length <= 12) {
+        return text;
+    } else {
+        return Number(text).toExponential();
+    }
+}
+
 function processInput(text) {
     let output;
-    let operators = '+-*/';
+
     if (!isNaN(text)) {
         output = numbers(text);
+        lastSelected = text;
     } else if (text === 'CE') {
         output = clear();
+        lastSelected = 'C';
     } else if (text === '<') {
         output = backspace();
+        lastSelected = 'B';
     } else if (text === '+/-') {
         output = signSwitch();
+        lastSelected = 'S';
     } else if (text === '=') {
-        output = equals(text);
+        output = equals();
+        lastSelected = 'E';
+    } else if (text === 'D') {
+        showDebug = !showDebug;
+    } else if (text === '.') {
+        output = decimal();
+        lastSelected = text;
+    } else if (text === 'xy') {
+        output = setOperator('^');
+        lastSelected = '^';
     } else if (operators.includes(text)) {
         output = setOperator(text);
+        lastSelected = text;
     }
-    updateDisplay(output);
+
+    roundedOutput = roundOutput(output);
+    updateDisplay(roundedOutput);
     updateInfo();
 }
 
 function setOperator(text) {
-    if (calculator.currentValue) {
-        calculator.operator = text;
+    let output;
+    if (operators.includes(lastSelected)) {
+        output = display.textContent;
+    } else {
+        output = equals();
     }
-    return display.textContent;
+    calculator.operator = text;
+    return output;
 }
 
-function equals(text) {
-    let current = Number(display.textContent);
+function decimal() {
+    let current = getDisplayText();
+    let output = current;
+    if (current && !current.includes('.')) {
+        output = current + '.';
+    }
+    return output;
+}
+
+function equals() {
+    let current = getDisplayValue();
     output = current;
-    if (calculator.previousValue) {
-        output = calculator.operate(calculator.previousValue, calculator.currentValue, calculator.operator);
+
+    if (calculator.previousValue && calculator.currentValue && calculator.operator) {
+        if (lastSelected !== 'E') {
+            output = calculator.operate(calculator.previousValue, calculator.currentValue, calculator.operator);
+            calculator.previousValue = calculator.currentValue;
+            calculator.currentValue = output;
+        } else {
+            let temp = calculator.previousValue;
+            calculator.previousValue = calculator.currentValue;
+            calculator.currentValue = temp;
+            output = calculator.operate(calculator.previousValue, calculator.currentValue, calculator.operator);
+            calculator.previousValue = calculator.currentValue;
+            calculator.currentValue = output;
+        }
     }
     return String(output);
 }
 
 function numbers(text) {
-    let current = Number(display.textContent);
+    let current = getDisplayText();
     let output;
-    if (!calculator.operator) {
-        output = (current === 0 || current === '') ? Number(text) : Number(current += text);
-        calculator.currentValue = output;
-    } else {
-        display.textContent = '';
-        calculator.previousValue = calculator.currentValue;
-        calculator.currentValue = Number(text);
-        output = Number(text);
 
+    if (operators.includes(lastSelected)) {
+        calculator.previousValue = getDisplayValue();
+        calculator.currentValue = Number(text);
+        output = text;
+    } else {
+        output = current += text;
+        calculator.currentValue = Number(output);
     }
-    return String(output);
+    return output;
 }
 
 function backspace() {
-    let current = Number(display.textContent);
+    let current = getDisplayText();
     let output;
-    if (Math.abs(current) <= 9) {
+    if (Math.abs(getDisplayValue()) < 10) {
         output = '';
-    } else if (current > 0) {
-        output = Math.floor(current / 10);
-    } else if (current < 0) {
-        output = Math.ceil(current / 10)
+    } else {
+        output = current.slice(0, -1);
     }
-    return String(output);
+    return output;
 }
 
 function clear() {
@@ -99,21 +155,31 @@ function clear() {
 }
 
 function signSwitch() {
-    let current = display.textContent;
+    let current = getDisplayText();
     let output = current;
-    if (display.textContent) {
-        output = Number(current) * -1;
+    if (current) {
+        if (current.charAt(0) === '-') output = current.substring(1);
+        else output = '-' + output;
     }
-    return String(output);
+    return output;
 }
 
 function updateInfo() {
-    testing.innerHTML = `previousValue: ${calculator.previousValue}, currentValue: ${calculator.currentValue}<br>operator: ${calculator.operator}`;
+    if (showDebug === true) {
+        testing.innerHTML = `previousValue: ${calculator.previousValue}<br>currentValue: ${calculator.currentValue}<br>operator: ${calculator.operator}<br>lastSelected: ${lastSelected}`;
+    } else {
+        testing.innerHTML = '';
+    }
 }
 
 const buttons = document.querySelectorAll('.button');
 const display = document.querySelector('.display');
 const testing = document.querySelector('.testing');
+const operators = '+-*/^';
+const digits = '0123456789';
+
+let lastSelected;
+showDebug = true;
 
 updateInfo();
 
@@ -140,11 +206,17 @@ document.addEventListener('keydown', function (event) {
         case '*':
         case '/':
         case '=':
-        case 'Backspace':
             processInput(event.key);
+            break;
+        case 'Backspace':
+            processInput('<');
             break;
         case 'Enter':
             processInput('=');
+            break;
+        case 'Shift':
+            showDebug = !showDebug;
+            updateInfo();
             break;
         case ' ':
             processInput('CE');
