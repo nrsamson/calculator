@@ -1,3 +1,7 @@
+body {
+    background-color: #B0C4DE;
+}
+
 .calculator-container {
     display: grid;
     grid-template-rows: repeat(4, 1fr);
@@ -16,7 +20,8 @@
     border: 4px solid black;
     padding-right: 10px;
     font-size: 40px;
-    background-color: #f2f2f2;
+    background-color: #92a5db;
+
 }
 
 .button-row {
@@ -50,42 +55,30 @@
 .back-button,
 .sign-button {
     width: 240px;
-    background-color: #ffffe0;
+    background-color: #4682B4;
 }
 
 .back-button:hover,
 .sign-button:hover {
-    background-color: #fffff0;
+    background-color: rgba(255, 255, 240, 0.7);
 }
 
-.num-button {
-    background-color: #f2f2f2;
+.num-button,
+.clear-button,
+.equals-button {
+    background-color: rgba(0, 71, 171, 0.7);
 }
 
-.num-button:hover {
-    background-color: #e6e6e6;
+.num-button:hover,
+.clear-button:hover,
+.equals-button:hover {
+    background-color: rgba(0, 71, 171, 0.5);
 }
 
 .operator-button {
-    background-color: #4d94ff;
+    background-color: rgba(61, 89, 171, 0.7);
 }
 
 .operator-button:hover {
     background-color: #80b3ff;
-}
-
-.equals-button {
-    background-color: #00cc66;
-}
-
-.equals-button:hover {
-    background-color: #33cc77;
-}
-
-.clear-button {
-    background-color: #ff6666;
-}
-
-.clear-button:hover {
-    background-color: #ff8080;
 }

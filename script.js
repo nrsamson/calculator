@@ -1,57 +1,130 @@
-function operate(a, b, operator) {
-    switch (operator) {
-        case '+':
-            return a + b;
-        case '-':
-            return a - b;
-        case '*':
-            return a * b;
-        case '/':
-            if (b === 0) return 'Error';
-            return a / b;
-        default:
-            return 'Error';
+const calculator = {
+    currentValue: null,
+    previousValue: null,
+    operator: null,
+    clear() {
+        this.currentValue = null;
+        this.previousValue = null;
+        this.operator = null;
+    },
+    operate(a, b, operator) {
+        switch (operator) {
+            case '+':
+                return a + b;
+            case '-':
+                return a - b;
+            case '*':
+                return a * b;
+            case '/':
+                if (b === 0) return 'Error';
+                return a / b;
+            default:
+                return 'D';
+        }
     }
+};
+
+function updateDisplay(text) {
+    display.textContent = text;
 }
 
-function updateDisplay(button) {
-    display.textContent = calculateCurrentValue(button.textContent);
+function processInput(text) {
+    let output;
+    let operators = '+-*/';
+    if (!isNaN(text)) {
+        output = numbers(text);
+    } else if (text === 'CE') {
+        output = clear();
+    } else if (text === '<') {
+        output = backspace();
+    } else if (text === '+/-') {
+        output = signSwitch();
+    } else if (text === '=') {
+        output = equals(text);
+    } else if (operators.includes(text)) {
+        output = setOperator(text);
+    }
+    updateDisplay(output);
+    updateInfo();
 }
 
-function showInfo() {
-    testing.innerHTML = `(${lastValue}) ${operator} (${currentValue})`;
+function setOperator(text) {
+    if (calculator.currentValue) {
+        calculator.operator = text;
+    }
+    return display.textContent;
 }
 
-function calculateCurrentValue(input) {
-    showInfo();
-    switch (input) {
-        case 'CE':
-            if (currentValue && currentValue !== 0) {
-                currentValue = 0;
-            }
-            else {
-                lastValue = '';
-                currentValue = '';
-                operator = lastValue;
-            }
-            break;
-        case '<':
-            currentValue = Math.floor(currentValue / 10);
-            break;
-        case '+':
-        case '-':
-        case '*':
-        case '/':
-            operator = input;
-            if (!lastValue) {
-                lastValue = currentValue;
-                currentValue = '';
-                showInfo();
-                return lastValue;
-            } else {
+function equals(text) {
+    let current = Number(display.textContent);
+    output = current;
+    if (calculator.previousValue) {
+        output = calculator.operate(calculator.previousValue, calculator.currentValue, calculator.operator);
+    }
+    return String(output);
+}
 
-            }
-            break;
+function numbers(text) {
+    let current = Number(display.textContent);
+    let output;
+    if (!calculator.operator) {
+        output = (current === 0 || current === '') ? Number(text) : Number(current += text);
+        calculator.currentValue = output;
+    } else {
+        display.textContent = '';
+        calculator.previousValue = calculator.currentValue;
+        calculator.currentValue = Number(text);
+        output = Number(text);
+
+    }
+    return String(output);
+}
+
+function backspace() {
+    let current = Number(display.textContent);
+    let output;
+    if (Math.abs(current) <= 9) {
+        output = '';
+    } else if (current > 0) {
+        output = Math.floor(current / 10);
+    } else if (current < 0) {
+        output = Math.ceil(current / 10)
+    }
+    return String(output);
+}
+
+function clear() {
+    calculator.clear();
+    return '';
+}
+
+function signSwitch() {
+    let current = display.textContent;
+    let output = current;
+    if (display.textContent) {
+        output = Number(current) * -1;
+    }
+    return String(output);
+}
+
+function updateInfo() {
+    testing.innerHTML = `previousValue: ${calculator.previousValue}, currentValue: ${calculator.currentValue}<br>operator: ${calculator.operator}`;
+}
+
+const buttons = document.querySelectorAll('.button');
+const display = document.querySelector('.display');
+const testing = document.querySelector('.testing');
+
+updateInfo();
+
+buttons.forEach(button => {
+    button.addEventListener('click', function () {
+        processInput(button.textContent)
+    })
+});
+
+document.addEventListener('keydown', function (event) {
+    switch (event.key) {
         case '0':
         case '1':
         case '2':
@@ -62,52 +135,21 @@ function calculateCurrentValue(input) {
         case '7':
         case '8':
         case '9':
-            if (!lastPressed) {
-                currentValue *= 10;
-                currentValue += Number(input);
-            }
-            break;
-        case '+/-':
-            currentValue = -currentValue;
-            break;
+        case '+':
+        case '-':
+        case '*':
+        case '/':
         case '=':
-            if (lastValue && currentValue) {
-                let temp = lastValue;
-                lastValue = operate(lastValue, currentValue, operator);
-                newSession = false;
-                showInfo();
-                return lastValue;
-            } else if (operator) {
-                lastValue = operate(lastValue, currentValue, operator);
-                return lastValue;
-            }
+        case 'Backspace':
+            processInput(event.key);
+            break;
+        case 'Enter':
+            processInput('=');
+            break;
+        case ' ':
+            processInput('CE');
             break;
         default:
             break;
-    }
-    showInfo();
-    return currentValue;
-}
-
-const buttons = document.querySelectorAll('.button');
-const backButton = document.querySelector('.back-button');
-
-const display = document.querySelector('.display');
-const testing = document.querySelector('.testing');
-
-let lastValue = '';
-let currentValue = '';
-let lastPressed = '';
-let operator = '';
-
-showInfo();
-
-buttons.forEach(button => {
-    button.addEventListener('click', function () { updateDisplay(button) })
-});
-
-document.addEventListener('keydown', function (event) {
-    if (event.key === 'Backspace') {
-        updateDisplay(backButton);
     }
 });
